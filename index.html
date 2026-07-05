@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kavishe Smart Shule - Chekechea na Shule ya Msingi Kamili</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .glass-card {
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        body { background: #030712; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen font-sans overflow-x-hidden antialiased">
+
+    <!-- 1. FOMU YA AUTH (LOGIN / SIGNUP OVERLAY) -->
+    <div id="authScreen" class="fixed inset-0 bg-[#030712] z-50 flex items-center justify-center p-4">
+        <div class="bg-[#0b1329]/60 border border-slate-900/60 p-8 rounded-[2rem] w-full max-w-md shadow-2xl space-y-6 text-center">
+            
+            <div class="mx-auto h-16 w-16 bg-[#1d3557]/40 border border-blue-900/40 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/10">
+                <i class="fa-solid fa-graduation-cap text-[#3a86ff] text-2xl"></i>
+            </div>
+
+            <div>
+                <h2 class="text-xl font-black tracking-wider uppercase text-white">KAVISHE SMART SHULE</h2>
+                <p class="text-xs text-slate-400 mt-1">Ingia au jisajili kuanza masomo ya Chekechea na Msingi</p>
+            </div>
+            
+            <div id="authError" class="hidden text-xs bg-red-950/50 border border-red-800 text-red-400 p-3 rounded-xl text-center font-bold"></div>
+            
+            <form id="authForm" class="text-left space-y-4">
+                <div id="nameFieldGroup" class="hidden space-y-1.5">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">MAJINA KAMILI</label>
+                    <input type="text" id="authName" placeholder="Mf. Michael Kavishe"
+                           class="w-full bg-[#0a0f1d] border border-slate-800/80 rounded-xl px-4 py-3.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">BARUA PEPE (EMAIL)</label>
+                    <input type="email" id="authEmail" placeholder="mfano@gmail.com" required
+                           class="w-full bg-[#0a0f1d] border border-slate-800/80 rounded-xl px-4 py-3.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">NYWILA (PASSWORD)</label>
+                    <input type="password" id="authPassword" placeholder="........" required
+                           class="w-full bg-[#0a0f1d] border border-slate-800/80 rounded-xl px-4 py-3.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                </div>
+
+                <button type="submit" id="authBtn" class="w-full bg-[#2563eb] hover:bg-blue-500 text-white text-xs font-bold uppercase py-3.5 rounded-xl transition shadow-lg mt-2">
+                    INGIA DARASANI
+                </button>
+            </form>
+
+            <div class="pt-2">
+                <button id="toggleAuthModeBtn" class="text-xs text-[#3a86ff] hover:underline font-medium bg-transparent">
+                    Hujasajiliwa bado? Tengeneza Akaunti
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. MFUMO MKUU WA APP -->
+    <div id="appScreen" class="hidden">
+        <nav class="glass-card border-b border-slate-800/80 sticky top-0 z-40 px-4 py-3 shadow-2xl">
+            <div class="max-w-7xl mx-auto flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="h-9 w-9 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fa-solid fa-graduation-cap text-white text-base"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-sm font-black tracking-wider uppercase text-white">Kavishe Smart Shule</h1>
+                        <p class="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Chekechea na Msingi Kamili</p>
+                    </div>
+                </div>
+                <button id="logoutBtn" class="bg-red-950/40 border border-red-900/40 text-red-400 h-8 w-8 rounded-lg flex items-center justify-center"><i class="fa-solid fa-right-from-bracket text-xs"></i></button>
+            </div>
+        </nav>
+
+        <!-- SEHEMU YA TANGAZO (KUTOKA KWA ADMIN APP) -->
+        <div id="adminAnnouncementBox" class="max-w-7xl mx-auto p-4 hidden">
+            <div class="bg-blue-950/40 border border-blue-800/60 p-4 rounded-2xl flex items-start space-x-3">
+                <i class="fa-solid fa-bullhorn text-blue-400 text-lg mt-0.5 animate-bounce"></i>
+                <div>
+                    <h4 class="text-xs font-black uppercase text-blue-400 tracking-wider">Tangazo la Shule</h4>
+                    <p id="announcementText" class="text-xs text-slate-200 mt-1 font-medium">Inapakia tangazo...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- UJUMBE WA AKAUNTI ILIYOFUNGWA / HAJALIPIA -->
+        <div id="blockedAccountBox" class="max-w-7xl mx-auto p-4 hidden">
+            <div class="bg-red-950/60 border border-red-800 p-5 rounded-2xl flex items-start space-x-4 shadow-xl">
+                <i class="fa-solid fa-circle-exclamation text-red-400 text-2xl mt-1 animate-pulse"></i>
+                <div>
+                    <h4 class="text-sm font-black uppercase text-red-400 tracking-wider">MASOMO YAMEFUNGWA!</h4>
+                    <p class="text-xs text-slate-200 mt-1 font-semibold leading-relaxed">
+                        Akaunti yako haijajisajili kikamilifu au muda wa malipo ya masomo umeisha. Tafadhali wasiliana na Uongozi au fanya malipo ili kuendelea kupata masomo yote kutoka kwa Mwalimu Kavishe AI.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <main class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
+            
+            <!-- PANEL YA KUSHOTO -->
+            <section class="lg:col-span-4 space-y-4">
+                
+                <!-- Gemini API Key Container -->
+                <div class="glass-card p-4 rounded-2xl border border-slate-800/80 shadow-xl">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-400 mb-3"><i class="fa-solid fa-key text-blue-400 mr-2"></i> Gemini API Key</h3>
+                    <div class="flex gap-2">
+                        <input type="password" id="apiKeyField" placeholder="Weka API Key..." class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none w-full">
+                        <button id="saveKeyBtn" class="bg-slate-800 hover:bg-slate-700 px-4 rounded-xl text-xs font-bold transition">Hifadhi</button>
+                    </div>
+                </div>
+
+                <!-- Syllabus selectors -->
+                <div class="glass-card p-4 rounded-2xl border border-slate-800/80 space-y-3">
+                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-400"><i class="fa-solid fa-sliders text-indigo-400 mr-2"></i> Chagua Masomo</h3>
+                    
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">Darasa</label>
+                        <select id="selectClass" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300">
+                            <option value="Chekechea (Nursery)">Chekechea (Nursery)</option>
+                            <option value="Darasa la 1">Darasa la 1</option>
+                            <option value="Darasa la 2">Darasa la 2</option>
+                            <option value="Darasa la 3">Darasa la 3</option>
+                            <option value="Darasa la 4">Darasa la 4</option>
+                            <option value="Darasa la 5">Darasa la 5</option>
+                            <option value="Darasa la 6">Darasa la 6</option>
+                            <option value="Darasa la 7">Darasa la 7</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">Somo</label>
+                        <select id="selectSubject" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300"></select>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase">Mada ya Kujifunza (Topic)</label>
+                        <select id="selectTopic" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300"></select>
+                    </div>
+                    <button id="teachBtn" class="w-full bg-[#2563eb] text-white font-black text-xs uppercase py-3 rounded-xl shadow-lg mt-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        Ingia Darasani Sasa
+                    </button>
+                </div>
+
+                <!-- SEHEMU YA KUCHORA -->
+                <div class="glass-card p-4 rounded-2xl border border-slate-800/80 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xs font-black uppercase tracking-wider text-slate-400 flex items-center">
+                            <i class="fa-solid fa-palette text-sky-400 mr-2"></i> Ubao wa Kuchora
+                        </h3>
+                        <button id="clearCanvasBtn" class="text-[10px] font-bold text-red-400 bg-red-950/30 px-2 py-1 rounded border border-red-900/30 transition">Futa</button>
+                    </div>
+                    <div class="relative bg-slate-950 rounded-xl border border-slate-800 overflow-hidden">
+                        <canvas id="drawingCanvas" class="touch-none cursor-crosshair block mx-auto bg-slate-950"></canvas>
+                    </div>
+                    <button id="sendDrawingBtn" class="w-full bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold text-xs py-2 rounded-xl transition">
+                        Weka Mchoro Huu Kwenye Chat
+                    </button>
+                </div>
+            </section>
+
+            <!-- UBAO WA MASOMO NA CHAT -->
+            <section class="lg:col-span-8 space-y-4">
+                <div class="glass-card rounded-2xl border border-slate-800/80 flex flex-col h-[580px] overflow-hidden">
+                    <div class="px-4 py-3 bg-slate-900/40 border-b border-slate-800/80 flex justify-between items-center">
+                        <h2 id="boardTitle" class="text-xs font-bold uppercase text-slate-200">Ubao wa Masomo</h2>
+                        <span class="text-[9px] font-black uppercase bg-slate-950 px-2 py-0.5 rounded border border-slate-800 text-indigo-400">Mwalimu Kavishe AI</span>
+                    </div>
+                    
+                    <div id="studyOutput" class="flex-1 p-5 overflow-y-auto space-y-4 text-xs text-slate-300 bg-slate-950/20 leading-relaxed">
+                        <p class="text-slate-400 italic">Chagua Darasa lako la Chekechea au Shule ya Msingi kushoto, kisha bonyeza kitufe kuanza masomo rasmi kwa kina.</p>
+                    </div>
+
+                    <!-- IMAGE PREVIEW CONTAINER -->
+                    <div id="imagePreviewContainer" class="hidden px-4 py-2 bg-slate-900/60 border-t border-slate-800/60 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <img id="imagePreview" src="" alt="Preview" class="h-10 w-10 object-cover rounded-lg border border-slate-700">
+                            <p class="text-[10px] font-bold text-sky-400 animate-pulse uppercase">Picha/Mchoro umeambatanishwa...</p>
+                        </div>
+                        <button id="clearImageBtn" class="text-slate-400 hover:text-red-400 text-xs p-1">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                        </button>
+                    </div>
+
+                    <!-- CHAT BOX CONTROLS -->
+                    <div class="p-3 bg-slate-900/60 border-t border-slate-800/80 flex items-center gap-2">
+                        <div class="flex items-center space-x-1">
+                            <button id="cameraTrigger" class="h-9 w-9 bg-slate-950 border border-slate-800 rounded-xl text-slate-400 hover:text-white transition flex items-center justify-center" title="Piga picha">
+                                <i class="fa-solid fa-camera text-xs"></i>
+                            </button>
+                            <button id="galleryTrigger" class="h-9 w-9 bg-slate-950 border border-slate-800 rounded-xl text-slate-400 hover:text-white transition flex items-center justify-center" title="Pakia Picha">
+                                <i class="fa-solid fa-image text-xs"></i>
+                            </button>
+                            <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden">
+                            <input type="file" id="galleryInput" accept="image/*" class="hidden">
+                        </div>
+
+                        <input type="text" id="chatInputField" placeholder="Uliza swali lako hapa au elezea mchoro wako..." 
+                               class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+
+                        <button id="sendChatBtn" class="h-9 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span>Tuma</span> <i class="fa-solid fa-paper-plane text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, collection, query, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCx7nOR0DjKfEt3PkVTeZFa9xQP0_EPysI",
+            authDomain: "kavishe-smart-app.firebaseapp.com",
+            projectId: "kavishe-smart-app",
+            storageBucket: "kavishe-smart-app.firebasestorage.app",
+            messagingSenderId: "861071206882",
+            appId: "1:861071206882:web:02cb51b55db7696ab371bb"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let isLoginMode = true;
+        let currentSelectedBase64Image = null;
+        let isUserBlocked = false; // Mfumo wa kufunga masomo
+
+        const toggleBtn = document.getElementById('toggleAuthModeBtn');
+        const nameFieldGroup = document.getElementById('nameFieldGroup');
+        const authBtn = document.getElementById('authBtn');
+        const errorBox = document.getElementById('authError');
+
+        toggleBtn.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            errorBox.classList.add('hidden');
+            if(isLoginMode) {
+                nameFieldGroup.classList.add('hidden');
+                authBtn.innerText = "INGIA DARASANI";
+                toggleBtn.innerText = "Hujasajiliwa bado? Tengeneza Akaunti";
+            } else {
+                nameFieldGroup.classList.remove('hidden');
+                authBtn.innerText = "JISAJILI SASA";
+                toggleBtn.innerText = "Tayari una akaunti? Ingia Hapa";
+            }
+        });
+
+        // VUTA TANGAZO LA ADMIN PANEL REAL-TIME
+        function listenToAnnouncements() {
+            const q = query(collection(db, "announcements"), limit(1));
+            onSnapshot(q, (snapshot) => {
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if(data) {
+                        document.getElementById('adminAnnouncementBox').classList.remove('hidden');
+                        document.getElementById('announcementText').innerText = data.text || data.message || "Hakuna ujumbe mpya.";
+                    }
+                });
+            }, (err) => console.log("Firestore Announcement Error: ", err));
+        }
+
+        // KAGUA HALI YA MALIPO / BLOCK ZA MTUMIAJI REAL-TIME
+        function listenToUserStatus(uid) {
+            onSnapshot(doc(db, "users", uid), (snapshot) => {
+                const userData = snapshot.data();
+                const blockedBox = document.getElementById('blockedAccountBox');
+                const teachBtn = document.getElementById('teachBtn');
+                const sendChatBtn = document.getElementById('sendChatBtn');
+                const out = document.getElementById('studyOutput');
+
+                if (userData && (userData.status === "blocked" || userData.status === "inactive")) {
+                    isUserBlocked = true;
+                    blockedBox.classList.remove('hidden');
+                    teachBtn.disabled = true;
+                    sendChatBtn.disabled = true;
+                    out.innerHTML = "<div class='text-center p-6 text-red-400 font-bold'><i class='fa-solid fa-lock text-3xl mb-2'></i><br>MASOMO YAMEFUNGWA! <br><span class='text-xs font-normal text-slate-400 mt-1 block'>Tafadhali kamilisha malipo yako ili kurejeshewa huduma ya Mwalimu Kavishe AI.</span></div>";
+                } else {
+                    isUserBlocked = false;
+                    blockedBox.classList.add('hidden');
+                    teachBtn.disabled = false;
+                    sendChatBtn.disabled = false;
+                }
+            }, (err) => console.log("User Status Tracking Error: ", err));
+        }
+
+        // Auth State Watcher
+        onAuthStateChanged(auth, (user) => {
+            if(user) {
+                document.getElementById('authScreen').classList.add('hidden');
+                document.getElementById('appScreen').classList.remove('hidden');
+                listenToAnnouncements();
+                listenToUserStatus(user.uid); // Anza kukagua hali ya malipo hapa
+            } else {
+                document.getElementById('authScreen').classList.remove('hidden');
+                document.getElementById('appScreen').classList.add('hidden');
+            }
+        });
+
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorBox.classList.add('hidden');
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+            authBtn.disabled = true;
+
+            try {
+                if(isLoginMode) {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    const name = document.getElementById('authName').value.trim();
+                    const credential = await createUserWithEmailAndPassword(auth, email, password);
+                    await setDoc(doc(db, "users", credential.user.uid), {
+                        uid: credential.user.uid,
+                        fullName: name,
+                        email: email,
+                        role: "mwanafunzi_msingi",
+                        status: "active", // Inaanza active, unaweza kuibadilisha kuwa "blocked" kupitia admin app yako
+                        createdAt: new Date().toISOString()
+                    });
+                }
+            } catch (err) {
+                errorBox.classList.remove('hidden');
+                errorBox.innerText = "Hitilafu: " + err.message;
+            } finally {
+                authBtn.disabled = false;
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+
+        const savedKey = localStorage.getItem('kavishe_prim_key');
+        if(savedKey) document.getElementById('apiKeyField').value = savedKey;
+        document.getElementById('saveKeyBtn').addEventListener('click', () => {
+            const k = document.getElementById('apiKeyField').value.trim();
+            if(k) { localStorage.setItem('kavishe_prim_key', k); alert("Key imehifadhiwa!"); }
+        });
+
+        // CANVAS SYSTEMS
+        const canvas = document.getElementById('drawingCanvas');
+        let ctx = null; let isDrawing = false;
+        if (canvas) {
+            ctx = canvas.getContext('2d');
+            canvas.width = 300; canvas.height = 180;
+            ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 4;
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+            canvas.addEventListener('mousedown', (e) => { isDrawing = true; startDraw(e); });
+            canvas.addEventListener('mousemove', drawLines);
+            canvas.addEventListener('mouseup', () => isDrawing = false);
+
+            canvas.addEventListener('touchstart', (e) => { isDrawing = true; const t = e.touches[0]; startDraw({clientX: t.clientX, clientY: t.clientY}); e.preventDefault(); });
+            canvas.addEventListener('touchmove', (e) => { const t = e.touches[0]; drawLines({clientX: t.clientX, clientY: t.clientY}); e.preventDefault(); });
+            canvas.addEventListener('touchend', () => isDrawing = false);
+        }
+
+        function startDraw(e) {
+            const rect = canvas.getBoundingClientRect();
+            ctx.beginPath(); ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        }
+        function drawLines(e) {
+            if(!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top); ctx.stroke();
+        }
+        document.getElementById('clearCanvasBtn').addEventListener('click', () => ctx.clearRect(0, 0, canvas.width, canvas.height));
+        
+        document.getElementById('sendDrawingBtn').addEventListener('click', () => {
+            if(isUserBlocked) return;
+            const dataURL = canvas.toDataURL('image/jpeg', 0.8);
+            currentSelectedBase64Image = dataURL.split(',')[1];
+            document.getElementById('imagePreview').src = dataURL;
+            document.getElementById('imagePreviewContainer').classList.remove('hidden');
+        });
+
+        const cameraInput = document.getElementById('cameraInput');
+        const galleryInput = document.getElementById('galleryInput');
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        const previewImage = document.getElementById('imagePreview');
+
+        document.getElementById('cameraTrigger').addEventListener('click', () => cameraInput.click());
+        document.getElementById('galleryTrigger').addEventListener('click', () => galleryInput.click());
+
+        function handleImage(file) {
+            if(file) {
+                const r = new FileReader();
+                r.onload = (e) => {
+                    currentSelectedBase64Image = e.target.result.split(',')[1];
+                    previewImage.src = e.target.result;
+                    previewContainer.classList.remove('hidden');
+                };
+                r.readAsDataURL(file);
+            }
+        }
+        cameraInput.addEventListener('change', (e) => handleImage(e.target.files[0]));
+        galleryInput.addEventListener('change', (e) => handleImage(e.target.files[0]));
+        document.getElementById('clearImageBtn').addEventListener('click', () => {
+            currentSelectedBase64Image = null; previewContainer.classList.add('hidden');
+        });
+
+        // MTAALA RASMI WA PRIMARY 
+        const primarySyllabus = {
+            "Chekechea (Nursery)": {
+                "Kuhesabu": ["Kutambua Namba 1-10", "Kuhesabu Vitu", "Maumbo Rahisi (Duara, Pembetatu)"],
+                "Kusoma": ["Sauti za Herufi (A, E, I, O, U)", "Kutamka Maneno Meepesi", "Hadithi za Picha"],
+                "Kuandika/Kuchora": ["Kushika Penseli vizuri", "Kuchora Mistari ya Nyooka", "Kupaka Rangi Maumbo"]
+            },
+            "Darasa la 1": {
+                "Kiswahili": ["Kusoma Herufi na Silabi", "Kuandika Maneno", "Kusikiliza na Kuongea"],
+                "Hisabati": ["Namba 1 hadi 99", "Kujumlisha Namba Rahisi", "Kutoa Namba Rahisi"],
+                "English": ["Greeting and Self-Introduction", "Naming Classroom Objects", "Simple Alphabet Sound"],
+                "Afya na Mazingira": ["Usafi wa Mwili na Mavazi", "Kutunza Vyombo vya Chakula", "Takataka na Utunzaji wake"],
+                "Sanaa na Michezo": ["Kuimba Nyimbo fupi", "Michezo ya Kukimbia", "Kucheza kwa Midundo"],
+                "Uraia na Maadili": ["Kujitambua na Kupenda Shule", "Kuheshimu Wazazi na Walimu", "Alama za Taifa letu"]
+            },
+            "Darasa la 2": {
+                "Kiswahili": ["Kusoma Sentensi Fupi", "Ufahamu wa Hadithi", "Kuandika kwa Usafi na Nafasi"],
+                "Hisabati": ["Namba hadi 999", "Kujumlisha kwa Makundi", "Kutoa kwa Kukopa"],
+                "English": ["My Family and Friends", "Numbers 1 to 20 in Words", "Simple Action Verbs"],
+                "Afya na Mazingira": ["Chakula Bora na Maji Safi", "Magonjwa ya Kuliza", "Kusafisha Mazingira ya Shule"],
+                "Sanaa na Michezo": ["Kuchora kwa Penseli ya Rangi", "Kuvuka Vikwazo", "Maigizo mepesi"],
+                "Uraia na Maadili": ["Ushirikiano Nyumbani na Shuleni", "Kusema Ukweli daima", "Kuhifadhi mali zetu"]
+            },
+            "Darasa la 3": {
+                "Kiswahili": ["Insha Fupi na Muundo wake", "Methali, Vitendawili na Misemo", "Aina za Maneno na Ngeli"],
+                "Hisabati": ["Kuzidisha Namba", "Kugawanya Namba", "Sehemu (Fractions) na Vipimo"],
+                "English": ["Telling Time", "Describing People and Places", "Simple Present Tense"],
+                "Sayansi na Teknolojia": ["Afya na Usafi wa Mwili", "Mazingira Yetu na Viumbe", "Wanyama na Mimea", "Nishati na Mashine Rahisi"],
+                "Maarifa ya Jamii": ["Mazingira yanayotuzunguka", "Hali ya Hewa na Vipengele vyake", "Shughuli za kiuchumi za Jamii"],
+                "Stadi za Kazi": ["Kufuma na Kushona kwa Mkono", "Kupika Vyakula Meepesi", "Kutengeneza Vitu vya Udongo"],
+                "Uraia na Maadili": ["Haki na Wajibu wa Mtoto", "Uvumilivu na Ustahimilivu", "Upendo kwa Jamii"]
+            },
+            "Darasa la 4": {
+                "Kiswahili": ["Sarufi na Ngeli za Kiswahili", "Kusoma kwa Ufasaha na Lafudhi", "Uandishi wa Barua za Kirafiki"],
+                "Hisabati": ["Namba za Kiroma", "Vipimo vya Wakati na Fedha", "Eneo na Chuva ya Maumbo"],
+                "English": ["Talking About Yesterday (Past)", "Expressing Future Plans", "Reading Short Stories"],
+                "Sayansi na Teknolojia": ["Mifumo ya Mwili wa Binadamu", "Nishati ya Jua na Mwanga", "Mabadiliko ya Hali ya Maada"],
+                "Maarifa ya Jamii": ["Mashujaa wa Taifa letu", "Ramani na Matumizi yake", "Ulinzi na Usalama wa Jamii"],
+                "Stadi za Kazi": ["Ufugaji mdogo wa Kuku/Sungura", "Kutunza Bustani ya Shule", "Matumizi ya Zana za Kazi"],
+                "Uraia na Maadili": ["Demokrasia Shuleni", "Uadilifu na Uwazi", "Utii wa Sheria na Taratibu"]
+            },
+            "Darasa la 5": {
+                "Kiswahili": ["Uchambuzi wa Hadithi na Vitabu", "Matumizi ya Kamusi", "Uandishi wa Hotuba Fupi"],
+                "Hisabati": ["Asilimia na Sehemu", "Aljebra Rahisi", "Takwimu na Grafu"],
+                "English": ["Adjectives and Adverbs", "Writing Friendly Letters", "Comprehension Questions"],
+                "Sayansi na Teknolojia": ["Mfumo wa Damu na Moyo", "Mabadiliko ya Hali ya Hewa", "Sehemu za Kompyuta na Kazi zake"],
+                "Maarifa ya Jamii": ["Historia ya Tanganyika", "Rasilimali za Tanzania", "Ujasiriamali na Biashara"],
+                "Stadi za Kazi": ["Sanaa ya Maonesho na Muziki", "Upishi wa Kitaalamu", "Utunzaji wa Kumbukumbu za Kazi"],
+                "Uraia na Maadili": ["Ushirikiano wa Kimataifa (EAC)", "Kuhudumia Wenye Mahitaji Maalum", "Kazi na Maendeleo"]
+            },
+            "Darasa la 6": {
+                "Kiswahili": ["Ushairi na Nyimbo za Kiswahili", "Mnyambuliko wa Vitenzi", "Ufahamu na Kujibu Maswali ya Juu"],
+                "Hisabati": ["Viwango na Uwiano (Ratios)", "Eneo la Mduara", "Mlinganyo Sahani (Equations)"],
+                "English": ["Conjunctions and Prepositions", "Expressing Opinions", "Writing Short Compositions"],
+                "Sayansi na Teknolojia": ["Mfumo wa Uzazi na Kubalehe", "Umeme na Sumaku", "Matumizi salama ya Mtandao"],
+                "Maarifa ya Jamii": ["Kutawaliwa kwa Afrika", "Mifumo ya Madaraka", "Ulimwengu wa Sasa"],
+                "Stadi za Kazi": ["Kuanzisha Miradi Midogo", "Sanaa ya Ufinyanzi", "Matengenezo ya Zana"],
+                "Uraia na Maadili": ["Uzalendo na Katiba", "Haki za Binadamu", "Uwajibikaji"]
+            },
+            "Darasa la 7": {
+                "Kiswahili": ["Maandalizi ya NECTA (Sarufi)", "Uhakiki wa Fasihi Simulizi", "Insha ngumu na Misemo"],
+                "Hisabati": ["Mizizi ya Namba (Square Roots)", "Aljebra ya Juu", "Jiometri ya Mitihani ya NECTA"],
+                "English": ["Active and Passive Voice", "NECTA Grammar Revision", "Comprehensive Writing Skills"],
+                "Sayansi na Teknolojia": ["Kurithi Tabia (Genetics)", "Mashine Tata", "Mifumo ya Sayari"],
+                "Maarifa ya Jamii": ["Kukoloniwa kwa Afrika", "Umoja wa Mataifa (UN)", "Biashara ya Kimataifa"],
+                "Stadi za Kazi": ["Kutathmini Miradi na Faida", "Ubunifu wa Kazi za Mikono", "Maandalizi ya Maisha Baada ya Shule"],
+                "Uraia na Maadili": ["Uongozi Bora", "Utatuzi wa Migogoro", "Maadili ya Mtanzania"]
+            }
+        };
+
+        const classSelect = document.getElementById('selectClass');
+        const subjectSelect = document.getElementById('selectSubject');
+        const topicSelect = document.getElementById('selectTopic');
+
+        function populateSubjects() {
+            const cls = classSelect.value;
+            subjectSelect.innerHTML = "";
+            if(primarySyllabus[cls]) {
+                Object.keys(primarySyllabus[cls]).forEach(sub => {
+                    subjectSelect.innerHTML += `<option value="${sub}">${sub}</option>`;
+                });
+            }
+            populateTopics();
+        }
+
+        function populateTopics() {
+            const cls = classSelect.value;
+            const sub = subjectSelect.value;
+            topicSelect.innerHTML = "";
+            if(primarySyllabus[cls] && primarySyllabus[cls][sub]) {
+                primarySyllabus[cls][sub].forEach(top => {
+                    topicSelect.innerHTML += `<option value="${top}">${top}</option>`;
+                });
+            }
+        }
+
+        classSelect.addEventListener('change', populateSubjects);
+        subjectSelect.addEventListener('change', populateTopics);
+        populateSubjects();
+
+        async function queryGemini(promptText, base64) {
+            const key = localStorage.getItem('kavishe_prim_key');
+            if(!key) return "Weka Gemini API Key juu kwanza!";
+            
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
+            let payload = { contents: [{ parts: [{ text: promptText }] }] };
+            
+            if(base64) {
+                payload.contents[0].parts.push({ inlineData: { mimeType: "image/jpeg", data: base64 } });
+            }
+            
+            const res = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        document.getElementById('teachBtn').addEventListener('click', async () => {
+            if(isUserBlocked) return; // Zuia kama akaunti imefungwa
+            const cls = classSelect.value;
+            const sub = subjectSelect.value;
+            const topic = topicSelect.value;
+            const out = document.getElementById('studyOutput');
+
+            document.getElementById('boardTitle').innerText = `${sub} - ${topic} (${cls})`;
+            out.innerHTML = "<p class='text-blue-400 font-bold animate-pulse'><i class='fa-solid fa-cookie-bite animate-spin mr-2'></i> Mwalimu Kavishe anaandaa somo kwa watoto...</p>";
+
+            const prompt = `Wewe ni Mwalimu Kavishe, mwalimu wa watoto wa Chekechea na Shule ya Msingi Tanzania. Fundisha kwa kina sana lakini kwa kutumia mifano ya kuvutia mada ya "${topic}" ya somo la "${sub}" kwa kiwango cha "${cls}". Mwishoni mwa somo lako LAZIMA uweke sehemu kubwa iliyoandikwa "MUHTASARI WA SOMO (SUMMARY)" yenye pointi fupi sana na rahisi kukumbuka kwa watoto. Tumia lugha tamu ya Kiswahili.`;
+
+            const res = await queryGemini(prompt, null);
+            out.innerHTML = res.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+        });
+
+        document.getElementById('sendChatBtn').addEventListener('click', async () => {
+            if(isUserBlocked) return; // Zuia kama akaunti imefungwa
+            const input = document.getElementById('chatInputField');
+            const txt = input.value.trim();
+            const out = document.getElementById('studyOutput');
+
+            if(!txt && !currentSelectedBase64Image) return;
+            input.value = "";
+
+            out.innerHTML += `<div class='bg-slate-900/60 p-3 rounded-xl border border-slate-800 mt-2 text-right'><p class='text-xs text-white'>${txt || "Ameongeza mchoro/picha"}</p></div>`;
+            
+            const prompt = `Wewe ni Mwalimu Kavishe wa shule ya msingi. Mwanafunzi amekuuliza swali au amekupa picha/mchoro huu wa kazi yake. Mjibu kwa upendo mkubwa wa kiwalimu na umpe ufafanuzi rahisi kwa Kiswahili cha watoto. Swali: ${txt}`;
+
+            const res = await queryGemini(prompt, currentSelectedBase64Image);
+            out.innerHTML += `<div class='bg-slate-900/40 p-3 rounded-xl border border-slate-800 mt-2 text-left'><p class='text-[10px] font-bold text-indigo-400 uppercase'>Mwalimu Kavishe</p><p class='text-xs text-slate-200 mt-1'>${res.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')}</p></div>`;
+            
+            currentSelectedBase64Image = null;
+            previewContainer.classList.add('hidden');
+            if(ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+            out.scrollTop = out.scrollHeight;
+        });
+    </script>
+</body>
+</html>
